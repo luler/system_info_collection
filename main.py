@@ -55,7 +55,7 @@ param['disk_partitions'] = disk_partitions
 # 请求推送
 config_path = os.path.abspath('config.ini')
 cf = configparser.ConfigParser()
-cf.read(config_path)
+cf.read(config_path, encoding='utf-8')
 url = cf.get('base', 'url')
 token = cf.get('base', 'token')
 headers = {
