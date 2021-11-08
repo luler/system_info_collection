@@ -65,7 +65,7 @@ def collect():
     }
     res = requests.post(url=url, json=param, headers=headers)
     if res.status_code != 200:
-        raise Exception(res.text)
+        raise Exception(res.text.encode('utf-8'))
 
 
 while True:
