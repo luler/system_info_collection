@@ -30,38 +30,39 @@ token = linzhou
 
 ```json
 {
-  "platform": "Windows-10-10.0.19042-SP0",
   //系统名称
-  "ip": "172.28.48.1",
+  "platform": "Windows-10-10.0.19042-SP0",
   //服务器ip
-  "cpu_count": 8,
+  "ip": "172.28.48.1",
   //CPU逻辑核心数
-  "cpu_percent": 10.7,
+  "cpu_count": 8,
   //总得CPU使用率
-  "memory_total": 12728913920,
+  "cpu_percent": 10.7,
   //总内存，字节，以下设计存储都是字节
-  "memory_available": 750944256,
+  "memory_total": 12728913920,
   //可用内存
-  "sent_sum": 23240,
+  "memory_available": 750944256,
   //网络每秒发送字节数
-  "recv_sum": 355112,
+  "sent_sum": 23240,
   //网络每秒接收字节数
-  "disk_read_sum": 37599232,
+  "recv_sum": 355112,
   //磁盘每秒读字节数
-  "disk_write_sum": 5242880,
+  "disk_read_sum": 37599232,
   //磁盘每秒写字节数
-  "disk_total": 755188957184,
+  "disk_write_sum": 5242880,
   //磁盘总字节
-  "disk_free": 531016433664,
+  "disk_total": 755188957184,
   //磁盘总空闲字节
+  "disk_free": 531016433664,
+  //各个磁盘使用情况
   "disk_partitions": [
     {
-      "mountpoint": "C:\\",
       //逻辑挂载点
-      "total": 255082172416,
+      "mountpoint": "C:\\",
       //总大小
-      "free": 106955689984
+      "total": 255082172416,
       //空闲大小
+      "free": 106955689984
     },
     {
       "mountpoint": "D:\\",
