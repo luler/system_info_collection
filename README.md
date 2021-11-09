@@ -30,6 +30,8 @@ token = linzhou
 
 ```json
 {
+  //mac地址
+  "mac": "11:11:11:11",
   //系统名称
   "platform": "Windows-10-10.0.19042-SP0",
   //服务器ip
