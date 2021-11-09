@@ -24,7 +24,7 @@ url = https://hello.dreamplay.top/api/test
 token = linzhou
 ```
 
-6. 运行程序：python main.py
+6. 运行程序：python daemon.py
 
 ### 采集内容
 
