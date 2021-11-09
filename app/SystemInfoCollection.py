@@ -62,11 +62,15 @@ class SystemInfoCollection:
         disk_total = 0
         disk_free = 0
         disk_partitions = []
+        unique_disk_devices = []
         for partition in partitions:
-            disk = psutil.disk_usage(partition.mountpoint)
+            if (partition.device in unique_disk_devices):
+                continue  # 不重复计算已被挂载的硬盘设备
+            unique_disk_devices.append(partition.device)
+            disk = psutil.disk_usage(partition.device)
             disk_total = disk_total + disk.total
             disk_free = disk_free + disk.free
-            disk_partitions.append({'mountpoint': partition.mountpoint, 'total': disk.total, 'free': disk.free})
+            disk_partitions.append({'device': partition.device, 'total': disk.total, 'free': disk.free})
 
         self.param['disk_total'] = disk_total
         self.param['disk_free'] = disk_free
