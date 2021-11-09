@@ -1,6 +1,8 @@
 # coding=utf-8
 import os
 import sys
+import signal
+import psutil
 
 sys.path.append('app')
 import SystemInfoCollection
@@ -21,9 +23,15 @@ pid_file = os.path.abspath('./runtime/system_info_collection.pid')
 if os.path.isfile(pid_file):
     f = open(pid_file, 'r')
     id = f.read()
-    id = int(id)
-    os.kill(id, 9)
     f.close()
+    id = int(id)
+    try:
+        has = 'python' in psutil.Process(id).name()
+    except:
+        has = False
+    if has:
+        os.kill(id, signal.SIGKILL)
+    os.remove(pid_file)
 
 f = open(pid_file, 'w+')
 f.write(str(os.getpid()))
