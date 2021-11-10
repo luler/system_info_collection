@@ -61,7 +61,7 @@ def status():
         except:
             has = False
         if has:
-            print('process is running:' + id)
+            print('process is running:' + str(id))
             exit()
     print('process is stop')
 
