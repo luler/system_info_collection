@@ -4,9 +4,7 @@ import platform
 import sys
 import signal
 import psutil
-
-sys.path.append('app')
-import SystemInfoCollection
+import app.SystemInfoCollection as SystemInfoCollection
 
 pid_file = os.path.abspath('./runtime/system_info_collection.pid')
 

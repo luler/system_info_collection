@@ -16,6 +16,8 @@ class SystemInfoCollection:
     error_count = 0
     # 请求参数字典
     param = {}
+    # 基本配置
+    config = {}
 
     def __get_mac_address(self):
         mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
@@ -30,6 +32,14 @@ class SystemInfoCollection:
         self.param['ip'] = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
         # 逻辑核心数
         self.param['cpu_count'] = psutil.cpu_count()
+        # 配置初始
+        config_path = os.path.abspath('./config/config.ini')
+        cf = configparser.ConfigParser()
+        cf.read(config_path, encoding='utf-8')
+        self.config['url'] = cf.get('base', 'url')
+        self.config['token'] = cf.get('base', 'token')
+        self.config['interval'] = int(cf.get('base', 'interval'))
+        self.config['error_exit_count'] = int(cf.get('base', 'error_exit_count'))
 
     def __collect(self):
         # 间隔0.1秒，CPU的平均使用率
@@ -82,11 +92,8 @@ class SystemInfoCollection:
         self.param['disk_partitions'] = disk_partitions
 
         # 请求推送
-        config_path = os.path.abspath('./config/config.ini')
-        cf = configparser.ConfigParser()
-        cf.read(config_path, encoding='utf-8')
-        url = cf.get('base', 'url')
-        token = cf.get('base', 'token')
+        url = self.config['url']
+        token = self.config['token']
         headers = {
             'token': token
         }
@@ -97,14 +104,14 @@ class SystemInfoCollection:
     def start(self):
         while True:
             try:
-                time.sleep(2)  # 这里再停滞一秒，大概3秒推送一次
+                time.sleep(self.config['interval'] - 1)  # 这里再停滞一秒，大概3秒推送一次
                 self.__collect()
                 # 执行成功，恢复
                 self.error_count = 0
             except Exception as e:
                 log_file = os.path.abspath('./runtime/error.log')
                 # 异常5次，结束守护进程
-                if self.error_count >= 5:
+                if self.error_count >= self.config['error_exit_count']:
                     with open(log_file, 'a+') as f:
                         content = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' 程序异常，已结束守护进程' + "\n"
                         f.write(content)
