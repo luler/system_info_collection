@@ -4,6 +4,7 @@ BASE_PAHT=$(cd $(dirname $0) && cd ../../ && pwd)
 
 echo '正在检查并安装python的依赖包...'
 PYTHON_VERSION=$(python -V 2>&1 | awk '{print $2}' | awk -F '.' '{print $1}')
+yum install -y pyhon-pip
 if [ $PYTHON_VERSION = 2 ]; then
   pip install setuptools==33.1.1
 fi
@@ -16,6 +17,7 @@ echo '复制代码程序代码完成'
 
 echo '正在初始化系统服务...'
 cp $BASE_PAHT/system_info_collection/shell/centos/system_info_collection.sh /etc/init.d/system_info_collection
+chmod +x /etc/init.d/system_info_collection
 chkconfig --add system_info_collection
 chkconfig system_info_collection on
 echo '初始化系统服务完成'
