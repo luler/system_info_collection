@@ -24,14 +24,6 @@ class SystemInfoCollection:
         return ":".join([mac[e:e + 2] for e in range(0, 11, 2)])
 
     def __init__(self):
-        # 机器mac地址
-        self.param['mac'] = self.__get_mac_address()
-        # 操作系统
-        self.param['platform'] = platform.platform()
-        # 系统ip
-        self.param['ip'] = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
-        # 逻辑核心数
-        self.param['cpu_count'] = psutil.cpu_count()
         # 配置初始
         config_path = os.path.abspath('./config/config.ini')
         cf = configparser.ConfigParser()
@@ -40,6 +32,16 @@ class SystemInfoCollection:
         self.config['token'] = cf.get('base', 'token')
         self.config['interval'] = int(cf.get('base', 'interval'))
         self.config['error_exit_count'] = int(cf.get('base', 'error_exit_count'))
+        # 机器mac地址
+        self.param['mac'] = self.__get_mac_address()
+        # 操作系统
+        self.param['platform'] = platform.platform()
+        # 系统ip
+        self.param['ip'] = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+        # 逻辑核心数
+        self.param['cpu_count'] = psutil.cpu_count()
+        # 标签
+        self.param['labels'] = list(filter(None, cf.get('base', 'labels').split(',')))
 
     def __collect(self):
         # 间隔0.1秒，CPU的平均使用率
