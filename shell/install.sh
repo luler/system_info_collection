@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 设置出现异常立即终止退出
+set -e
+
 BASE_PAHT=$(cd $(dirname $0) && cd ../../ && pwd)
 
 echo '正在检查并安装python的依赖包...'
