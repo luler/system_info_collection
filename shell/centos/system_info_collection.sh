@@ -6,19 +6,19 @@ BASE_PAHT=/usr/local/system_info_collection
 
 case "$1" in
 start)
-  cd $BASE_PAHT && python daemon.py start
+  cd $BASE_PAHT && python3 daemon.py start
   ;;
 
 stop)
-  cd $BASE_PAHT && python daemon.py stop
+  cd $BASE_PAHT && python3 daemon.py stop
   ;;
 
 status)
-  cd $BASE_PAHT && python daemon.py status
+  cd $BASE_PAHT && python3 daemon.py status
   ;;
 
 restart)
-  cd $BASE_PAHT && python daemon.py restart
+  cd $BASE_PAHT && python3 daemon.py restart
   ;;
 
 *)
