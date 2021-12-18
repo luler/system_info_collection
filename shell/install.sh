@@ -24,5 +24,8 @@ chkconfig system_info_collection on
 echo '初始化系统服务完成'
 
 echo '正在启动系统服务...'
-systemctl start system_info_collection
+if [ "`command -v service`" = "" ]; then
+    yum install -y epel-release initscripts
+fi
+service system_info_collection start
 echo '启动系统服务完成'
