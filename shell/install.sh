@@ -18,7 +18,7 @@ case $type in
         'ubuntu')
         echo '正在检查并安装python的依赖包...'
         if [ "`command -v python3`" = "" ] || [ "`command -v pip3`" = "" ]; then
-            apt install -y epel-release gcc python3 python3-pip
+            apt install -y gcc python3 python3-pip
         fi
         pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r $BASE_PAHT/system_info_collection/requirements.txt
         echo '检查并安装python的依赖包成功'
