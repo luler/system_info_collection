@@ -7,7 +7,7 @@ BASE_PAHT=$(cd $(dirname $0) && cd ../../ && pwd)
 
 echo '正在检查并安装python的依赖包...'
 if [ "`command -v python3`" = "" ] || [ "`command -v pip3`" = "" ]; then
-    yum install -y epel-release python3 python3-devel
+    yum install -y epel-release gcc python3 python3-devel
 fi
 pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r $BASE_PAHT/system_info_collection/requirements.txt
 echo '检查并安装python的依赖包成功'
