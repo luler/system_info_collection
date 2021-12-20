@@ -6,7 +6,7 @@ set -e
 BASE_PAHT=$(cd $(dirname $0) && cd ../../ && pwd)
 
 type=''
-if [ -f /etc/redhat-release ]i; then
+if [ -f /etc/redhat-release ]; then
         type='centos'
 fi
 if [ `cat /etc/issue | grep -i -c ubuntu` = 1 ]; then
