@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import re
 import uuid
 import psutil
 import time
@@ -43,10 +44,13 @@ class SystemInfoCollection:
         self.config['net_key'] = cf.get('base', 'net_key')
         if (self.config['net_key'] != ''):  # 指定网卡
             net_if_addr = psutil.net_if_addrs().get(self.config['net_key'])
-            # 机器mac地址
-            self.param['mac'] = net_if_addr[0].address
-            # 系统ip
-            self.param['ip'] = net_if_addr[1].address
+            for i in net_if_addr:
+                if re.match('^\d+\.\d+\.\d+\.\d+$', i.address):
+                    # 系统ip
+                    self.param['ip'] = i.address
+                elif re.match("^([0-9a-fA-F]{2}[:\-]{1}){5}[0-9a-fA-F]{2}$", i.address):
+                    # 机器mac地址
+                    self.param['mac'] = i.address
         else:
             # 机器mac地址
             self.param['mac'] = self.__get_mac_address()
