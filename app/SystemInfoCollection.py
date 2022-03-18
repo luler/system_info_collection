@@ -19,9 +19,17 @@ class SystemInfoCollection:
     # 基本配置
     config = {}
 
+    # 通用获取mac
     def __get_mac_address(self):
         mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
         return ":".join([mac[e:e + 2] for e in range(0, 11, 2)])
+
+    # 判断是否指定网卡，并返回网卡数据句柄
+    def __get_net_io(self):
+        if (self.config['net_key'] != ''):  # 指定网卡
+            return psutil.net_io_counters(pernic=True).get(self.config['net_key'])
+        else:
+            return psutil.net_io_counters()
 
     def __init__(self):
         # 配置初始
@@ -32,12 +40,20 @@ class SystemInfoCollection:
         self.config['token'] = cf.get('base', 'token')
         self.config['interval'] = int(cf.get('base', 'interval'))
         self.config['error_exit_count'] = int(cf.get('base', 'error_exit_count'))
-        # 机器mac地址
-        self.param['mac'] = self.__get_mac_address()
+        self.config['net_key'] = cf.get('base', 'net_key')
+        if (self.config['net_key'] != ''):  # 指定网卡
+            net_if_addr = psutil.net_if_addrs().get(self.config['net_key'])
+            # 机器mac地址
+            self.param['mac'] = net_if_addr[0].address
+            # 系统ip
+            self.param['ip'] = net_if_addr[1].address
+        else:
+            # 机器mac地址
+            self.param['mac'] = self.__get_mac_address()
+            # 系统ip
+            self.param['ip'] = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
         # 操作系统
         self.param['platform'] = platform.platform()
-        # 系统ip
-        self.param['ip'] = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
         # 逻辑核心数
         self.param['cpu_count'] = psutil.cpu_count()
         # 标签
@@ -53,7 +69,7 @@ class SystemInfoCollection:
         # 可用内存
         self.param['memory_available'] = memory.available
         # 网络
-        io = psutil.net_io_counters()
+        io = self.__get_net_io()
         b1 = io.bytes_sent
         b2 = io.bytes_recv
         # 磁盘
@@ -62,7 +78,7 @@ class SystemInfoCollection:
         c2 = io.write_bytes
         time.sleep(1)
         # 网络
-        io = psutil.net_io_counters()
+        io = self.__get_net_io()
         self.param['sent_sum'] = io.bytes_sent - b1
         self.param['recv_sum'] = io.bytes_recv - b2
         # 磁盘
