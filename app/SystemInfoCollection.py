@@ -115,12 +115,8 @@ class SystemInfoCollection:
         param['disk_partitions'] = disk_partitions
 
         # 请求推送
-        print(datetime.datetime.now().strftime(
-            '%Y-%m-%d %H:%M:%S'), '开始')
         t = threading.Thread(target=self.postData, args=(param,))
         t.start()
-        print(datetime.datetime.now().strftime(
-            '%Y-%m-%d %H:%M:%S'), '结束')
 
     # 推送数据到指定接口
     def postData(self, param):
