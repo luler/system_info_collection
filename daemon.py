@@ -1,12 +1,16 @@
 # coding=utf-8
 import os
 import platform
-import sys
 import signal
+import sys
+
 import psutil
+
 import app.SystemInfoCollection as SystemInfoCollection
 
-pid_file = os.path.abspath('./runtime/system_info_collection.pid')
+
+def get_pid_file():
+    return os.path.abspath('./runtime/system_info_collection.pid')
 
 
 def is_win():
@@ -19,7 +23,7 @@ def is_win():
 
 def start():
     if not is_win():  # 一般不是win，可进入守护进程
-        global pid_file
+        pid_file = get_pid_file()
         pid = os.fork()
         if pid:  ##父进程
             sys.exit(0)
@@ -40,7 +44,7 @@ def start():
 
 def kill():
     # 记录守护进程pid
-    global pid_file
+    pid_file = get_pid_file()
     # kill历史进程，存在问题可能kill调其他进程，这里不做这种打算
     if os.path.isfile(pid_file):
         f = open(pid_file, 'r')
@@ -58,7 +62,7 @@ def kill():
 
 def status():
     # 记录守护进程pid
-    global pid_file
+    pid_file = get_pid_file()
     # kill历史进程，存在问题可能kill调其他进程，这里不做这种打算
     if os.path.isfile(pid_file):
         f = open(pid_file, 'r')
@@ -75,21 +79,22 @@ def status():
     print('process is stop')
 
 
-action = sys.argv[1] if len(sys.argv) >= 2 else 'start'
-action = action if action in ['start', 'stop', 'status', 'restart'] else 'start'
+if __name__ == '__main__':
+    action = sys.argv[1] if len(sys.argv) >= 2 else 'start'
+    action = action if action in ['start', 'stop', 'status', 'restart'] else 'start'
 
-if action in ['start', 'restart']:
-    if not is_win():
+    if action in ['start', 'restart']:
+        if not is_win():
+            kill()
+        start()
+    elif action == 'stop':
+        if is_win():
+            print('暂不支持window下关闭进程')
+            exit()
         kill()
-    start()
-elif action == 'stop':
-    if is_win():
-        print('暂不支持window下关闭进程')
-        exit()
-    kill()
-    print('process has been stoped')
-else:
-    if is_win():
-        print('暂不支持window下查看进程状态')
-        exit()
-    status()
+        print('process has been stoped')
+    else:
+        if is_win():
+            print('暂不支持window下查看进程状态')
+            exit()
+        status()

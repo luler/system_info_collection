@@ -1,20 +1,20 @@
 # coding=utf-8
-import datetime
-import re
-import uuid
-import psutil
-import time
-import socket
-import platform
-import requests
 import configparser
+import datetime
 import os
+import platform
+import re
 import signal
+import socket
+import threading
+import time
+import uuid
+
+import psutil
+import requests
 
 
 class SystemInfoCollection:
-    # 错误次数
-    error_count = 0
     # 请求参数字典
     param = {}
     # 基本配置
@@ -64,14 +64,15 @@ class SystemInfoCollection:
         self.param['labels'] = list(filter(None, cf.get('base', 'labels').split(',')))
 
     def __collect(self):
+        param = self.param
         # 间隔0.1秒，CPU的平均使用率
-        self.param['cpu_percent'] = psutil.cpu_percent(interval=0.1)
+        param['cpu_percent'] = psutil.cpu_percent(interval=0.1)
         # 内存
         memory = psutil.virtual_memory()
         # 总内存
-        self.param['memory_total'] = memory.total
+        param['memory_total'] = memory.total
         # 可用内存
-        self.param['memory_available'] = memory.available
+        param['memory_available'] = memory.available
         # 网络
         io = self.__get_net_io()
         b1 = io.bytes_sent
@@ -83,12 +84,12 @@ class SystemInfoCollection:
         time.sleep(1)
         # 网络
         io = self.__get_net_io()
-        self.param['sent_sum'] = io.bytes_sent - b1
-        self.param['recv_sum'] = io.bytes_recv - b2
+        param['sent_sum'] = io.bytes_sent - b1
+        param['recv_sum'] = io.bytes_recv - b2
         # 磁盘
         io = psutil.disk_io_counters()
-        self.param['disk_read_sum'] = io.read_bytes - c1
-        self.param['disk_write_sum'] = io.write_bytes - c2
+        param['disk_read_sum'] = io.read_bytes - c1
+        param['disk_write_sum'] = io.write_bytes - c2
 
         partitions = psutil.disk_partitions()
         disk_total = 0
@@ -109,37 +110,71 @@ class SystemInfoCollection:
                 'free': disk.free
             })
 
-        self.param['disk_total'] = disk_total
-        self.param['disk_free'] = disk_free
-        self.param['disk_partitions'] = disk_partitions
+        param['disk_total'] = disk_total
+        param['disk_free'] = disk_free
+        param['disk_partitions'] = disk_partitions
 
         # 请求推送
-        url = self.config['url']
-        token = self.config['token']
-        headers = {
-            'token': token
-        }
-        res = requests.post(url=url, json=self.param, headers=headers)
-        if res.status_code != 200:
-            raise Exception(res.text.encode('utf-8'))
+        print(datetime.datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S'), '开始')
+        t = threading.Thread(target=self.postData, args=(param,))
+        t.start()
+        print(datetime.datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S'), '结束')
 
+    # 推送数据到指定接口
+    def postData(self, param):
+        try:
+            # 请求推送
+            url = self.config['url']
+            token = self.config['token']
+            headers = {
+                'token': token
+            }
+            res = requests.post(url=url, json=param, headers=headers)
+            if res.status_code != 200:
+                raise Exception(res.text)
+
+            self.setErrorCount(0)
+        except Exception as e:
+            error_count = self.getErrorCount()
+            # 异常5次，结束守护进程
+            if error_count >= self.config['error_exit_count']:
+                self.writeLog('程序异常，已结束守护进程')
+                os.kill(os.getpid(), signal.SIGTERM)
+            else:
+                error_count += 1
+                self.writeLog(e)
+                self.setErrorCount(error_count)
+
+    # 保存错误次数记录
+    def setErrorCount(self, error_count):
+        error_count_file = os.path.abspath('./runtime/error_count.cache')
+        with open(error_count_file, 'w+', encoding='utf-8') as ecf:
+            ecf.write(str(error_count))
+
+    # 获取连续错误次数
+    def getErrorCount(self):
+        error_count_file = os.path.abspath('./runtime/error_count.cache')
+        try:
+            with open(error_count_file, 'r') as ecf:
+                error_count = int(ecf.read())
+        except FileNotFoundError:
+            error_count = 0
+            with open(error_count_file, 'w+', encoding='utf-8') as ecf:
+                ecf.write('0')
+        return error_count
+
+    # 写日志
+    def writeLog(self, content):
+        log_file = os.path.abspath('./runtime/error.log')
+        with open(log_file, 'a+', encoding='utf-8') as f:
+            content = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' + str(content) + "\n"
+            f.write(content)
+
+    # 启动程序
     def start(self):
+        self.setErrorCount(0)
         while True:
-            try:
-                time.sleep(self.config['interval'] - 1)  # 这里再停滞一秒，大概3秒推送一次
-                self.__collect()
-                # 执行成功，恢复
-                self.error_count = 0
-            except Exception as e:
-                log_file = os.path.abspath('./runtime/error.log')
-                # 异常5次，结束守护进程
-                if self.error_count >= self.config['error_exit_count']:
-                    with open(log_file, 'a+') as f:
-                        content = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' 程序异常，已结束守护进程' + "\n"
-                        f.write(content)
-                    os.kill(os.getpid(), signal.SIGKILL)
-                else:
-                    self.error_count += 1
-                    with open(log_file, 'a+') as f:
-                        content = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' + str(e) + "\n"
-                        f.write(content)
+            time.sleep(self.config['interval'] - 1)  # 这里再停滞一秒，大概3秒推送一次
+            self.__collect()
