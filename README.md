@@ -24,7 +24,16 @@ url = https://hello.dreamplay.top/api/test
 token = linzhou
 ```
 
-6. 运行程序：python daemon.py
+5. 运行程序：python daemon.py
+
+### 一键安装成服务(支持centos、ubuntu系统)
+
+```
+//安装
+sh shell/install.sh
+//卸载
+sh shell/uninstall.sh
+```
 
 ### 采集内容
 
@@ -77,4 +86,4 @@ token = linzhou
 
 ### 开发者
 
-1. 洲哥 <1207032539@qq.com>
+1. 我只想看看蓝天
