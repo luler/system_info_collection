@@ -160,7 +160,7 @@ class SystemInfoCollection:
                     res = requests.post(
                         url=self.config['url'],
                         json={
-                            data_list: data_list
+                            'data_list': data_list
                         },  # 推送数据列表
                         headers={'token': self.config['token']},
                         timeout=10  # 设置请求超时
