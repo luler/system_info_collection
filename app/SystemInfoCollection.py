@@ -25,6 +25,7 @@ class SystemInfoCollection:
             'url': cf.get('base', 'url'),
             'token': cf.get('base', 'token'),
             'interval': int(cf.get('base', 'interval')),
+            'post_min_count': int(cf.get('base', 'post_min_count')),
             'error_exit_count': int(cf.get('base', 'error_exit_count')),
             'net_key': cf.get('base', 'net_key')
         }
@@ -32,6 +33,9 @@ class SystemInfoCollection:
         # --- 生产者-消费者模式所需组件 ---
         self.data_queue = queue.Queue()  # 用于存放采集数据的线程安全队列
         self.stop_event = threading.Event()  # 用于通知工作线程停止的事件
+
+        # --- 数据缓冲区，用于聚合多条数据后批量推送 ---
+        self.data_buffer = []
 
         # --- 状态化数据，用于计算速率 ---
         self.last_collect_time = None
@@ -131,8 +135,14 @@ class SystemInfoCollection:
                 param['disk_write_sum'] = int(
                     (current_disk_io.write_bytes - self.last_disk_io.write_bytes) / time_delta)
 
-                # 数据采集完成，放入队列
-                self.data_queue.put(param)
+                # 数据放入缓冲区
+                self.data_buffer.append(param)
+
+                # 检查缓冲区是否达到推送条数
+                if len(self.data_buffer) >= self.config['post_min_count']:
+                    # 将缓冲区数据复制后清空，避免推送过程中数据被修改
+                    self.data_queue.put(self.data_buffer.copy())
+                    self.data_buffer.clear()
 
         # 更新状态以备下次计算
         self.last_collect_time = current_time
@@ -144,12 +154,14 @@ class SystemInfoCollection:
         while not self.stop_event.is_set():
             try:
                 # 阻塞等待，直到队列中有数据或超时
-                param = self.data_queue.get(timeout=1)
+                data_list = self.data_queue.get(timeout=1)
 
                 try:
                     res = requests.post(
                         url=self.config['url'],
-                        json=param,
+                        json={
+                            data_list: data_list
+                        },  # 推送数据列表
                         headers={'token': self.config['token']},
                         timeout=10  # 设置请求超时
                     )
@@ -207,5 +219,9 @@ class SystemInfoCollection:
         """优雅地停止服务"""
         self.write_log("Stopping System Info Collector...")
         self.stop_event.set()  # 通知所有线程停止
+        # 推送缓冲区中剩余的数据
+        if self.data_buffer:
+            self.data_queue.put(self.data_buffer.copy())
+            self.data_buffer.clear()
         # 等待队列中的任务完成
         self.data_queue.join()
