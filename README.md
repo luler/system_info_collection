@@ -26,7 +26,7 @@ token = linzhou
 
 5. 运行程序：python daemon.py
 
-### 一键安装成服务(支持centos、ubuntu系统)
+### 一键安装成服务(支持centos、debian、ubuntu系统)
 
 ```
 //安装
