@@ -18,7 +18,7 @@ import requests
 class SystemInfoCollection:
     def __init__(self):
         # --- 配置加载 ---
-        config_path = os.path.abspath('./config/config.ini')
+        config_path = os.path.abspath('./config.ini')
         cf = configparser.ConfigParser()
         cf.read(config_path, encoding='utf-8')
         self.config = {
@@ -72,7 +72,7 @@ class SystemInfoCollection:
         self.param['cpu_count'] = psutil.cpu_count()
 
         cf = configparser.ConfigParser()
-        cf.read(os.path.abspath('./config/config.ini'), encoding='utf-8')
+        cf.read(os.path.abspath('./config.ini'), encoding='utf-8')
         self.param['labels'] = list(filter(None, cf.get('base', 'labels').split(',')))
 
     def __get_net_io(self):
