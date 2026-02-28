@@ -3,7 +3,7 @@
 # 设置出现异常立即终止退出
 set -e
 
-BASE_PAHT=$(cd $(dirname $0) && cd ../../ && pwd)
+BASE_PAHT=$(cd $(dirname $0)/.. && pwd)
 
 type=''
 if [ -f /etc/redhat-release ]; then
