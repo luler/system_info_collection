@@ -2,14 +2,14 @@
 ; 推送接口，POST请求，json格式
 url = https://detect.xxx.top/api/pushSystemInfo
 ; 该参数会添加到请求头中，键名：token
-token = linzhou
+token=linzhou
 ; 采集系统信息的间隔，单位秒
-interval = 3
+interval=3
 ; 采集多少次后推送一次，默认为1（每次采集都推送）
-post_min_count = 1
-; 程序连续失败多少次，终止程序，每次耗时大概等于interval，建议大于5
-error_exit_count = 28800
+post_min_count=1
+; 推送请求连续失败多少次，终止程序，每次耗时大概等于interval*post_min_count，建议大于5
+error_exit_count=5
 ; 设置网速模块监听的网卡驱动，比如我们只需要外网网卡的网速时，但是服务器内网网卡也存在数据传输，就会导致网速计算偏大，这里可以指定网卡名称，如：eth0
-net_key =
+net_key=
 ; 主机标签，多个用逗号隔开
-labels =
+labels=

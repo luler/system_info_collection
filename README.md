@@ -80,7 +80,8 @@ sh shell/uninstall.sh
       "total": 500106784768,
       "free": 424060743680
     }
-  ]
+  ],
+  "create_time": 1687017600
 }
 ```
 

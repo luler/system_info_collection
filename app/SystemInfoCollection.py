@@ -96,6 +96,7 @@ class SystemInfoCollection:
         memory = psutil.virtual_memory()
         param['memory_total'] = memory.total
         param['memory_available'] = memory.available
+        param['create_time'] = int(datetime.datetime.now().timestamp())
 
         # 磁盘分区 (使用set优化去重)
         partitions = psutil.disk_partitions()
